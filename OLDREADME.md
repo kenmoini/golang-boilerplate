@@ -87,73 +87,75 @@ gpg --full-generate-key
 - Enter your personal information in the following prompts
 - Provide a passphrase to encrypt your personal key
 
-Now you have a key in the key store - you can verify this by running the command `gpg --list-keys --keyid-format long`
-
-You could stop here at this step and use your personal key to sign application releases but that risks everything else that would be signed by your personal key if it were ever compromised.  To avoid this and better manage GPG keys, we'll create a Project Key and sign it with our Personal Key.
+Now you have a key in the key store - you can verify this by running the command `gpg --list-keys`
 
 ### Generating Project GPG Keys
 
-Next we'll make a key for the project.  It's pretty much the same process as the last, but make sure to change the Name and Email address of the Project Key.
+Next we'll make a key for the project.
 
 ```bash
-## Generate a PROJECT GPG Key
-gpg --full-generate-key
+gpg --expert --full-generate-key
+
+Please select what kind of key you want:
+   (1) RSA and RSA (default)
+   (2) DSA and Elgamal
+   (3) DSA (sign only)
+   (4) RSA (sign only)
+   (7) DSA (set your own capabilities)
+   (8) RSA (set your own capabilities)
+   (9) ECC and ECC
+  (10) ECC (sign only)
+  (11) ECC (set your own capabilities)
+  (13) Existing key
+  (14) Existing key from card
+Your selection? 8
 ```
 
-- Select option `(1) RSA and RSA (default)`
-- Enter `4096` for the keysize 
-- Set `0` for no expiration (unless you really wanna mess with renewing your project key...)
-- Confirm the settings are correct with `y`
-- For the **"Real Name"** field set it for your Project name, probably the name of your repo - set the Email to a `project+your@email.com` format
+The next set of prompts will allow you to toggle capabilities - type `Q` to continue
+
+```bash
+Possible actions for a RSA key: Sign Certify Encrypt Authenticate 
+Current allowed actions: Sign Certify Encrypt 
+
+   (S) Toggle the sign capability
+   (E) Toggle the encrypt capability
+   (A) Toggle the authenticate capability
+   (Q) Finished
+
+Your selection? Q
+```
+
+- Set the key size to `4096`
+- Set an expiration (or don't)
+- For the **"Real Name"** field set it for your Project name, probably the name of your repo - set the Email to whatever valid address you'd like
 - In the **"Comment"** field set an overall reference to your project such as `github.com/YOUR_USER/PROJECT_NAME Project Key`
 - Give this key a passphrase, but a different one than your personal key of course.
 
-You should see similar output to the following if everything was entered and formatted correctly:
+This project key with the Certify capability can now sign other keys, like a Release Signing Key.
+
+Before proceeding, you should see similar output to the following:
 
 ```
-GnuPG needs to construct a user ID to identify your key.
-
-Real name: golang-boilerplate
-Email address: golang-boilerplate+ken@kenmoini.com
-Comment: github.com/kenmoini/golang-boilerplate Project Key
 You selected this USER-ID:
-    "golang-boilerplate (github.com/kenmoini/golang-boilerplate Project Key) <golang-boilerplate+ken@kenmoini.com>"
+    "golang-boilerplate (github.com/kenmoini/golang-boilerplate Project Key) <ken@kenmoini.com>"
+
+Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? O
+We need to generate a lot of random bytes. It is a good idea to perform
+some other action (type on the keyboard, move the mouse, utilize the
+disks) during the prime generation; this gives the random number
+generator a better chance to gain enough entropy.
+gpg: key A34134B8D2EC5887 marked as ultimately trusted
+gpg: revocation certificate stored as '/Users/kenmoini/.gnupg/openpgp-revocs.d/AB8491501376C56B72BDDD24A34134B8D2EC5887.rev'
+public and secret key created and signed.
+
+pub   rsa4096 2021-03-06 [SCE]
+      AB8491501376C56B72BDDD24A34134B8D2EC5887
+uid                      golang-boilerplate (github.com/kenmoini/golang-boilerplate Project Key) <ken@kenmoini.com>
 ```
 
-Before proceeding, we need to set an environmental variable that defines our Project Key ID - you can get it by running the following command:
+Take a note of the Key ID, `AB8491501376C56B72BDDD24A34134B8D2EC5887` in this case, printed right above the `uid` line.
 
-```bash
-gpg --list-keys --keyid-format long
-```
-
-You'll see something similar to the following:
-
-```
-$ gpg --list-keys --keyid-format long
-
-gpg: checking the trustdb
-gpg: marginals needed: 3  completes needed: 1  trust model: pgp
-gpg: depth: 0  valid:   2  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 2u
-/home/kemo/.gnupg/pubring.kbx
------------------------------
-pub   rsa4096/FC9869CA98201DA9 2021-03-06 [SC]
-      4FDB20A73BA4D3AC557C56F9FC9869CA98201DA9
-uid                 [ultimate] Ken Moini (Kemo Personal Key) <ken@kenmoini.com>
-sub   rsa4096/C2C7C3AB6EB04E32 2021-03-06 [E]
-
-pub   rsa4096/071BC18D1BB25158 2021-03-06 [SC]
-      E395F97DDE8521223AB5F704071BC18D1BB25158
-uid                 [ultimate] golang-boilerplate (github.com/kenmoini/golang-boilerplate Project Key) <golang-boilerplate+ken@kenmoini.com>
-sub   rsa4096/C6761B6899E6FB04 2021-03-06 [E]
-```
-
-What you're looking for is the long key ID for your Project key in between the `pub` and `uid` lines - in this case it would be `E395F97DDE8521223AB5F704071BC18D1BB25158`.
-
-Save that Project Key ID to an environment variable with the following command, of course substituting with your Key ID:
-
-```bash
-export PROJECT_KEY_ID=E395F97DDE8521223AB5F704071BC18D1BB25158
-```
+Use the following command to save that Key ID to an environment variable: `export PROJECT_KEY_ID=AB8491501376C56B72BDDD24A34134B8D2EC5887`
 
 ### Generating Project Release Signing GPG Keys
 
@@ -170,12 +172,13 @@ There is NO WARRANTY, to the extent permitted by law.
 
 Secret key is available.
 
-sec  rsa4096/071BC18D1BB25158
-     created: 2021-03-06  expires: never       usage: SC  
+gpg: checking the trustdb
+gpg: marginals needed: 3  completes needed: 1  trust model: pgp
+gpg: depth: 0  valid:   2  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 2u
+sec  rsa4096/A34134B8D2EC5887
+     created: 2021-03-06  expires: never       usage: C   
      trust: ultimate      validity: ultimate
-ssb  rsa4096/C6761B6899E6FB04
-     created: 2021-03-06  expires: never       usage: E   
-[ultimate] (1). golang-boilerplate (github.com/kenmoini/golang-boilerplate Project Key) <golang-boilerplate+ken@kenmoini.com>
+[ultimate] (1). golang-boilerplate (github.com/kenmoini/golang-boilerplate Project Key) <ken@kenmoini.com>
 
 gpg>
 ```
@@ -199,25 +202,23 @@ Which should result in something similar:
 ```bash
 gpg --sign-key $PROJECT_KEY_ID
 
-sec  rsa4096/071BC18D1BB25158
-     created: 2021-03-06  expires: never       usage: SC  
+sec  rsa4096/A34134B8D2EC5887
+     created: 2021-03-06  expires: never       usage: C   
      trust: ultimate      validity: ultimate
-ssb  rsa4096/C6761B6899E6FB04
-     created: 2021-03-06  expires: never       usage: E   
-ssb  rsa4096/0B720B983C4F71C1
-     created: 2021-03-06  expires: never       usage: SE  
-[ultimate] (1). golang-boilerplate (github.com/kenmoini/golang-boilerplate Project Key) <golang-boilerplate+ken@kenmoini.com>
+ssb  rsa4096/95ED8AE57849D064
+     created: 2021-03-06  expires: never       usage: S   
+[ultimate] (1). golang-boilerplate (github.com/kenmoini/golang-boilerplate Project Key) <ken@kenmoini.com>
 
 
-sec  rsa4096/071BC18D1BB25158
-     created: 2021-03-06  expires: never       usage: SC  
+sec  rsa4096/A34134B8D2EC5887
+     created: 2021-03-06  expires: never       usage: C   
      trust: ultimate      validity: ultimate
- Primary key fingerprint: E395 F97D DE85 2122 3AB5  F704 071B C18D 1BB2 5158
+ Primary key fingerprint: AB84 9150 1376 C56B 72BD  DD24 A341 34B8 D2EC 5887
 
-     golang-boilerplate (github.com/kenmoini/golang-boilerplate Project Key) <golang-boilerplate+ken@kenmoini.com>
+     golang-boilerplate (github.com/kenmoini/golang-boilerplate Project Key) <ken@kenmoini.com>
 
 Are you sure that you want to sign this key with your
-key "Ken Moini (Kemo Personal Key) <ken@kenmoini.com>" (FC9869CA98201DA9)
+key "Ken Moini (Kemo Personal Signing Key) <ken@kenmoini.com>" (ABF6891102897F05)
 
 Really sign? (y/N) y
 ```
@@ -243,7 +244,6 @@ gpg: depth: 0  valid:   2  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 2u
 sec   rsa4096/A34134B8D2EC5887 2021-03-06 [C]
       AB8491501376C56B72BDDD24A34134B8D2EC5887
 uid                 [ultimate] golang-boilerplate (github.com/kenmoini/golang-boilerplate Project Key) <ken@kenmoini.com>
-ssb   rsa4096/41ED8BE57149D36A 2021-03-06 [E]
 ssb   rsa4096/95ED8AE57849D064 2021-03-06 [SE]
 ```
 
