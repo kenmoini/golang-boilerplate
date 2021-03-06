@@ -34,6 +34,7 @@ jobs:
         id: import_gpg
         uses: paultyng/ghaction-import-gpg@v2.1.0
         env:
+          GPG_TTY: $(tty)
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           PASSPHRASE: ${{ secrets.PASSPHRASE }}
       -
@@ -43,5 +44,6 @@ jobs:
           version: latest
           args: release --rm-dist
         env:
+          GPG_TTY: $(tty)
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
