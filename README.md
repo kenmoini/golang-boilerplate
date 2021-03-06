@@ -155,40 +155,13 @@ Save that Project Key ID to an environment variable with the following command, 
 export PROJECT_KEY_ID=E395F97DDE8521223AB5F704071BC18D1BB25158
 ```
 
-### Generating Project Release Signing GPG Keys
+### Signing GPG Keys
 
-Now that we have a Project Key, we'll create a Release Signing Key - this allows your Personal and Project Keys to stay offline safely, while you use a Release Signing Key in GitHub to sign the project.  If GitHub's secret store is compromised then you can easily revoke the Release Signing Key and generate a new one without compromising your more sensitive Personal and Project Keys.
+Now that we have a Project Key, we'll sign it with our Personal Key - this allows your Personal Key to stay offline safely, while you use a Project Key in GitHub to sign the project.  If GitHub's secret store is compromised then you can easily revoke the Project Key and generate a new one without compromising your more sensitive Personal Key.
 
-Add a new key to your Project Key with the following command:
+***NOTE:*** *You could also create a subkey in the project key specifically for signing - that is outside the scope of this README*
 
-```bash
-gpg --expert --edit-key $PROJECT_KEY_ID
-
-gpg (GnuPG) 2.2.27; Copyright (C) 2021 Free Software Foundation, Inc.
-This is free software: you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.
-
-Secret key is available.
-
-sec  rsa4096/071BC18D1BB25158
-     created: 2021-03-06  expires: never       usage: SC  
-     trust: ultimate      validity: ultimate
-ssb  rsa4096/C6761B6899E6FB04
-     created: 2021-03-06  expires: never       usage: E   
-[ultimate] (1). golang-boilerplate (github.com/kenmoini/golang-boilerplate Project Key) <golang-boilerplate+ken@kenmoini.com>
-
-gpg>
-```
-
-- This opens the `gpg>` terminal prompt - type in `addkey` and select option `(8) RSA (set your own capabilities)`
-- Enter `Q` for finished which should use the default actions of "Sign Encrypt"
-- Set the key size to `4096`
-- Set an expiration if you'd like
-- Confirm and then DOUBLE confirm
-- You'll be prompted for the passphrase to the Project Key so it can be used to sign this new key
-- Finalize and exit the `gpg>` prompt by typing in `save`
-
-Now that the key is created you can sign it with your root Personal Key by running the following:
+Sign your Project Key with your Personal Key with the following command:
 
 ```bash
 gpg --sign-key $PROJECT_KEY_ID
@@ -203,9 +176,7 @@ sec  rsa4096/071BC18D1BB25158
      created: 2021-03-06  expires: never       usage: SC  
      trust: ultimate      validity: ultimate
 ssb  rsa4096/C6761B6899E6FB04
-     created: 2021-03-06  expires: never       usage: E   
-ssb  rsa4096/0B720B983C4F71C1
-     created: 2021-03-06  expires: never       usage: SE  
+     created: 2021-03-06  expires: never       usage: E
 [ultimate] (1). golang-boilerplate (github.com/kenmoini/golang-boilerplate Project Key) <golang-boilerplate+ken@kenmoini.com>
 
 
@@ -226,37 +197,10 @@ Confirm the prompt and enter your Personal Key passphrase when prompted.
 
 ### Exporting Keys
 
-Now that the keys are all created and signed, let's export the keys to a file, and to the public key network.
+Now that the keys are all created and signed, let's export the key to a file, and to the public key network.
 
 ```bash
-gpg --keyid-format long -K $PROJECT_KEY_ID
-```
-
-You should see output similar to the following, look for the `[SE]` signing key:
-
-```
-gpg --keyid-format long -K $PROJECT_KEY_ID
-
-gpg: checking the trustdb
-gpg: marginals needed: 3  completes needed: 1  trust model: pgp
-gpg: depth: 0  valid:   2  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 2u
-sec   rsa4096/A34134B8D2EC5887 2021-03-06 [C]
-      AB8491501376C56B72BDDD24A34134B8D2EC5887
-uid                 [ultimate] golang-boilerplate (github.com/kenmoini/golang-boilerplate Project Key) <ken@kenmoini.com>
-ssb   rsa4096/41ED8BE57149D36A 2021-03-06 [E]
-ssb   rsa4096/95ED8AE57849D064 2021-03-06 [SE]
-```
-
-Set the signing key ID to an environment variable like so:
-
-```
-export SIGNING_KEY=95ED8AE57849D064
-```
-
-Finally, export it to an ASCII file:
-
-```bash
-gpg --armor --export-secret-subkeys $SIGNING_KEY\! > golang-boilerplate.signing-key.gpg
+gpg --armor --export-secret-keys $PROJECT_KEY_ID > golang-boilerplate.project-key.gpg
 ```
 
 You'll be prompted for the Project Key passphrase - enter your passphrase.  Ensure to protect this private key file on your file system.
@@ -275,10 +219,13 @@ Now that we have our full GPG Key Chain set up, we can now create the GitHub Rep
 2. Click on the ***Settings*** tab
 3. Click the ***Secrets*** link from the left pane
 4. Click the ***New repository secret*** button
-5. Create a new Repository Secret
+5. Create a new set of Repository Secrets
 
   - **Name**: GPG_PRIVATE_KEY
-    **Value**: The contents of your exported signing key file
+    **Value**: The contents of your exported Project Key file
+
+  - **Name**: PASSPHRASE
+    **Value**: The passphrase to your Project Key
 
 ### Creating a New Release in GitHub
 
