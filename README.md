@@ -111,7 +111,7 @@ Please select what kind of key you want:
 Your selection? 8
 ```
 
-The next set of prompts will allow you to toggle capabilities - toggle signing and encrypting until the only allowed action is "Certify"
+The next set of prompts will allow you to toggle capabilities - type `Q` to continue
 
 ```bash
 Possible actions for a RSA key: Sign Certify Encrypt Authenticate 
@@ -122,27 +122,7 @@ Current allowed actions: Sign Certify Encrypt
    (A) Toggle the authenticate capability
    (Q) Finished
 
-Your selection? s
-
-Possible actions for a RSA key: Sign Certify Encrypt Authenticate 
-Current allowed actions: Certify Encrypt 
-
-   (S) Toggle the sign capability
-   (E) Toggle the encrypt capability
-   (A) Toggle the authenticate capability
-   (Q) Finished
-
-Your selection? e
-
-Possible actions for a RSA key: Sign Certify Encrypt Authenticate 
-Current allowed actions: Certify 
-
-   (S) Toggle the sign capability
-   (E) Toggle the encrypt capability
-   (A) Toggle the authenticate capability
-   (Q) Finished
-
-Your selection? q
+Your selection? Q
 ```
 
 - Set the key size to `4096`
@@ -168,7 +148,7 @@ gpg: key A34134B8D2EC5887 marked as ultimately trusted
 gpg: revocation certificate stored as '/Users/kenmoini/.gnupg/openpgp-revocs.d/AB8491501376C56B72BDDD24A34134B8D2EC5887.rev'
 public and secret key created and signed.
 
-pub   rsa4096 2021-03-06 [C]
+pub   rsa4096 2021-03-06 [SCE]
       AB8491501376C56B72BDDD24A34134B8D2EC5887
 uid                      golang-boilerplate (github.com/kenmoini/golang-boilerplate Project Key) <ken@kenmoini.com>
 ```
@@ -203,7 +183,8 @@ sec  rsa4096/A34134B8D2EC5887
 gpg>
 ```
 
-- This opens the `gpg>` terminal prompt - type in `addkey` and select option `(4) RSA (sign only)`
+- This opens the `gpg>` terminal prompt - type in `addkey` and select option `(8) RSA (set your own capabilities)`
+- Enter `Q` for finished which should use the default actions of "Sign Encrypt"
 - Set the key size to `4096`
 - Set an expiration if you'd like
 - Confirm and then DOUBLE confirm
@@ -252,7 +233,7 @@ Now that the keys are all created and signed, let's export the keys to a file, a
 gpg --keyid-format long -K $PROJECT_KEY_ID
 ```
 
-You should see output similar to the following, look for the `[S]` signing key:
+You should see output similar to the following, look for the `[SE]` signing key:
 
 ```
 gpg --keyid-format long -K $PROJECT_KEY_ID
@@ -263,7 +244,7 @@ gpg: depth: 0  valid:   2  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 2u
 sec   rsa4096/A34134B8D2EC5887 2021-03-06 [C]
       AB8491501376C56B72BDDD24A34134B8D2EC5887
 uid                 [ultimate] golang-boilerplate (github.com/kenmoini/golang-boilerplate Project Key) <ken@kenmoini.com>
-ssb   rsa4096/95ED8AE57849D064 2021-03-06 [S]
+ssb   rsa4096/95ED8AE57849D064 2021-03-06 [SE]
 ```
 
 Set the signing key ID to an environment variable like so:
