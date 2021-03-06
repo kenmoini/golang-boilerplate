@@ -37,8 +37,6 @@ checksum:
   algorithm: sha256
 signs:
   - artifacts: checksum
-    env:
-      - GPG_TTY=$(tty)
     args:
       # if you are using this is a GitHub action or some other automated pipeline, you 
       # need to pass the batch flag to indicate its not interactive.
