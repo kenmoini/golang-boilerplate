@@ -80,12 +80,12 @@ If you already have a Personal GPG Key pair that provides your identity then you
 gpg --full-generate-key
 ```
 
-- Select option `(1) RSA and RSA (default)`
-- Enter `4096` for the keysize 
-- Set `0` for no expiration (unless you really wanna mess with renewing your personal key...)
-- Confirm the settings are correct with `y`
-- Enter your personal information in the following prompts
-- Provide a passphrase to encrypt your personal key
+1. Select option `(1) RSA and RSA (default)`
+2. Enter `4096` for the keysize 
+3. Set `0` for no expiration (unless you really wanna mess with renewing your personal key...)
+4. Confirm the settings are correct with `y`
+5. Enter your personal information in the following prompts
+6. Provide a passphrase to encrypt your personal key
 
 Now you have a key in the key store - you can verify this by running the command `gpg --list-keys --keyid-format long`
 
@@ -100,13 +100,13 @@ Next we'll make a key for the project.  It's pretty much the same process as the
 gpg --full-generate-key
 ```
 
-- Select option `(1) RSA and RSA (default)`
-- Enter `4096` for the keysize 
-- Set `0` for no expiration (unless you really wanna mess with renewing your project key...)
-- Confirm the settings are correct with `y`
-- For the **"Real Name"** field set it for your Project name, probably the name of your repo - set the Email to a `project+your@email.com` format
-- In the **"Comment"** field set an overall reference to your project such as `github.com/YOUR_USER/PROJECT_NAME Project Key`
-- Give this key a passphrase, but a different one than your personal key of course.
+1. Select option `(1) RSA and RSA (default)`
+2. Enter `4096` for the keysize 
+3. Set `0` for no expiration (unless you really wanna mess with renewing your project key...)
+4. Confirm the settings are correct with `y`
+5. For the **"Real Name"** field set it for your Project name, probably the name of your repo - set the Email to a `project+your@email.com` format
+6. In the **"Comment"** field set an overall reference to your project such as `github.com/YOUR_USER/PROJECT_NAME Project Key`
+7. Give this key a passphrase, but a different one than your personal key of course.
 
 You should see similar output to the following if everything was entered and formatted correctly:
 
@@ -154,6 +154,38 @@ Save that Project Key ID to an environment variable with the following command, 
 ```bash
 export PROJECT_KEY_ID=E395F97DDE8521223AB5F704071BC18D1BB25158
 ```
+
+### Generating Project Release Signing GPG Keys
+
+Now that we have a Project Key, we'll create a Release Signing Key - add a new key to your Project Key with the following command:
+
+```bash
+gpg --expert --edit-key $PROJECT_KEY_ID
+
+gpg (GnuPG) 2.2.27; Copyright (C) 2021 Free Software Foundation, Inc.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Secret key is available.
+
+gpg: checking the trustdb
+gpg: marginals needed: 3  completes needed: 1  trust model: pgp
+gpg: depth: 0  valid:   2  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 2u
+sec  rsa4096/A34134B8D2EC5887
+     created: 2021-03-06  expires: never       usage: C   
+     trust: ultimate      validity: ultimate
+[ultimate] (1). golang-boilerplate (github.com/kenmoini/golang-boilerplate Project Key) <ken@kenmoini.com>
+
+gpg>
+```
+
+1. This opens the `gpg>` terminal prompt - type in `addkey` and select option `(8) RSA (set your own capabilities)`
+2. Enter `Q` for finished which should use the default actions of "Sign Encrypt"
+3. Set the key size to `4096`
+4. Set an expiration if you'd like
+5. Confirm and then DOUBLE confirm
+6. You'll be prompted for the passphrase to the Project Key so it can be used to sign this new key
+7. Finalize and exit the `gpg>` prompt by typing in `save`
 
 ### Signing GPG Keys
 
